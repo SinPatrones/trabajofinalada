@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <cstdlib>
 #include <vector>
+#include <algorithm>
 
 using namespace std;
 
@@ -67,11 +68,10 @@ void mostrarIndividuo(char * individuo, int tam = TAM){
     for(int idx = 0; idx < tam; idx++){
         cout << individuo[idx];
     }
-    cout << endl;
 }
 
 /* 010101  01111 */
-int funcionAptitud(char * individuo, int tam){
+int funcionAptitud(char * individuo, int tam = TAM){
     int inicio = (tam / 2) + 1;
     int contarUnos = 0;
     int contarCeros = 0;
@@ -117,15 +117,53 @@ bool operacionMutacion(char * individuo1, int tam = TAM){
     return true;
 }
 
+void mostrarTodosLosCandidatos(vector<pair<char *,int>> candidatos){
+    for(auto & candidato: candidatos){
+        mostrarIndividuo(candidato.first);
+        cout << "->" << candidato.second << " ";
+    }
+    cout << endl;
+}
+
+void asignarCalificacion(vector<pair<char *,int>> & candidatos){
+    for(auto & candidato: candidatos){
+        candidato.second = funcionAptitud(candidato.first);
+    }
+}
+
 int main(){
     srand(time(NULL));
+
+    // el mejor candidado mide 11
 
     const int cantidadIndividuos = 10;
     // cantidad de bits 11 <-- TAM
     // 6 -> 1 >  11
     // 5 -> 0 >
+         //     candidato, aptitud
+    vector<pair<char *   ,   int    >> candidatos;
 
+    for (int idx = 0; idx < cantidadIndividuos; idx++){
+        pair<char *, int> candidato(generarIndividuo(), 0);
+        candidatos.push_back(candidato);
+    }
 
+    mostrarTodosLosCandidatos(candidatos);
+    asignarCalificacion(candidatos);
+    mostrarTodosLosCandidatos(candidatos);
+
+    /* condiciones
+     1.- Definamos cantidad de generaciones
+     2.- Encontremos o aproximemos a la respuesta
+     3.- DETENGAMOS
+     4.- ERROR
+    */
+
+    sort(candidatos.begin(), candidatos.end(), [](pair<char *,int> candidato1, pair<char *,int> candidato2){
+        return candidato1.second > candidato2.second;
+    });
+
+    mostrarTodosLosCandidatos(candidatos);
 
 
     return 0;
