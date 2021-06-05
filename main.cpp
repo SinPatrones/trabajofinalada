@@ -75,6 +75,7 @@ int funcionAptitud(char * individuo, int tam = TAM){
     int inicio = (tam / 2) + 1;
     int contarUnos = 0;
     int contarCeros = 0;
+    // ###### - #####
     for(int idx = 0; idx < inicio; idx++){
         if (individuo[idx] == '1')
             contarUnos++;
@@ -165,6 +166,45 @@ int main(){
 
     mostrarTodosLosCandidatos(candidatos);
 
+    int generacion = 1;
+
+    while(true){
+        // Son los dos mejores
+        char * candidato1 = new char[TAM];
+        char * candidato2 = new char[TAM];
+
+        candidato1 = candidatos[0].first;
+        candidato2 = candidatos[1].first;
+
+        operacionMutacion(candidato1);
+        operacionMutacion(candidato2);
+
+        operacionCruce(candidato1, candidato2);
+
+        // botando al menos optimo
+        candidatos.pop_back();
+        // botando a los padres antiguos
+        if (funcionAptitud(candidato1) > funcionAptitud(candidato2)){
+            pair<char*,int> nuevoCandidato(candidato1, funcionAptitud(candidato1));
+            candidatos.push_back(nuevoCandidato);
+        } else {
+            pair<char*,int> nuevoCandidato(candidato2, funcionAptitud(candidato2));
+            candidatos.push_back(nuevoCandidato);
+        }
+
+        //asignarCalificacion(candidatos);
+        sort(candidatos.begin(), candidatos.end(), [](pair<char *,int> candidato1, pair<char *,int> candidato2){
+            return candidato1.second > candidato2.second;
+        });
+
+        if (candidatos[0].second >= TAM){
+            break;
+        }
+        cout << "GENERACION " << ++generacion << endl;
+    }
+
+    cout << "Mostrando Solución" << endl;
+    mostrarTodosLosCandidatos(candidatos);
 
     return 0;
 }
