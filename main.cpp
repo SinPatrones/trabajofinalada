@@ -47,6 +47,22 @@ using namespace std;
 -------------
 
 */
+
+unsigned long long binarioADecimal(char *individuo, int tam) {
+    unsigned long long decimal = 0;
+    int multiplicador = 1;
+    char caracterActual;
+    for (int i = tam - 1; i >= 0; i--) {
+        caracterActual = individuo[i];
+        if (caracterActual == '1') {
+            decimal += multiplicador;
+        }
+        multiplicador = multiplicador * 2;
+    }
+
+    return decimal;
+}
+
 const int TAM = 11;
 
 char * generarIndividuo(int tam = TAM){
@@ -71,21 +87,13 @@ void mostrarIndividuo(char * individuo, int tam = TAM){
 }
 
 /* 010101  01111 */
-int funcionAptitud(char * individuo, int tam = TAM){
-    int inicio = (tam / 2) + 1;
-    int contarUnos = 0;
-    int contarCeros = 0;
-    // ###### - #####
-    for(int idx = 0; idx < inicio; idx++){
-        if (individuo[idx] == '1')
-            contarUnos++;
-    }
-    for(int idx = inicio; idx < tam; idx++){
-        if (individuo[idx] == '0')
-            contarCeros++;
-    }
+long long funcionAptitud(char * individuo, int tam = TAM){
+    // conversión de binario a decimal
+    unsigned long long numeroX = binarioADecimal(individuo, tam);
+    // ecuación
+    const  long long resultado = (numeroX * numeroX) + (numeroX * 2) - 10;
 
-    return contarUnos + contarCeros;
+    return resultado;
 }
 
 bool operacionCruce(char * individuo1, char * individuo2, int tam = TAM){
@@ -160,6 +168,8 @@ int main(){
      4.- ERROR
     */
 
+    long long respuestaOptima = 50;
+
     sort(candidatos.begin(), candidatos.end(), [](pair<char *,int> candidato1, pair<char *,int> candidato2){
         return candidato1.second > candidato2.second;
     });
@@ -197,7 +207,9 @@ int main(){
             return candidato1.second > candidato2.second;
         });
 
-        if (candidatos[0].second >= TAM){
+        // VALOR OPTIMO --> TOTAL: 100;
+        // UMBRAL: -10 a 10
+        if (candidatos[0].second == 1000){
             break;
         }
         cout << "GENERACION " << ++generacion << endl;
