@@ -63,7 +63,7 @@ unsigned long long binarioADecimal(char *individuo, int tam) {
     return decimal;
 }
 
-const int TAM = 11;
+const int TAM = 4;
 
 char * generarIndividuo(int tam = TAM){
     char * individuo = new char[tam];
@@ -140,6 +140,35 @@ void asignarCalificacion(vector<pair<char *,int>> & candidatos){
     }
 }
 
+void ordenarValores(vector<pair<char *,int>> & candidatos, vector<pair<char *,int>> & positivos, vector<pair<char *,int>> & negativos, long long valorOptimo){
+    positivos.clear();
+    negativos.clear();
+
+    // agrupando en valores positivos/negativos
+    for (auto & candidato: candidatos){
+        if (valorOptimo - candidato.second > 0){
+            positivos.push_back(candidato);
+        } else {
+            negativos.push_back(candidato);
+        }
+    }
+    // Ordenando vectores de manera creciente
+    sort(positivos.begin(), positivos.end(), [](pair<char *,int> candidato1, pair<char *,int> candidato2){
+        return candidato1.second < candidato2.second;
+    });
+    sort(negativos.begin(), negativos.end(), [](pair<char *,int> candidato1, pair<char *,int> candidato2){
+        return candidato1.second < candidato2.second;
+    });
+
+    candidatos.clear();
+    for(auto & candidato: positivos){
+        candidatos.push_back(candidato);
+    }
+    for(auto & candidato: negativos){
+        candidatos.push_back(candidato);
+    }
+}
+
 int main(){
     srand(time(NULL));
 
@@ -169,12 +198,24 @@ int main(){
     */
 
     long long respuestaOptima = 50;
+    long long umbral = 5;
 
-    sort(candidatos.begin(), candidatos.end(), [](pair<char *,int> candidato1, pair<char *,int> candidato2){
-        return candidato1.second > candidato2.second;
-    });
+    vector<pair<char *,int>> vectorPositivos;
+    vector<pair<char *,int>> vectorNegativos;
 
+    ordenarValores(candidatos, vectorPositivos, vectorNegativos, respuestaOptima);
+
+    cout << "--- CANDIDATOS ---\n";
     mostrarTodosLosCandidatos(candidatos);
+    cout << "--- CANDIDATOS POSITIVOS ---\n";
+    mostrarTodosLosCandidatos(vectorPositivos);
+    cout << "--- CANDIDATOS NEGATIVOS ---\n";
+    mostrarTodosLosCandidatos(vectorNegativos);
+    cout << endl;
+
+    cout << "\n---> CANDIDATOS <---\n";
+    mostrarTodosLosCandidatos(candidatos);
+    cout << endl << endl;
 
     int generacion = 1;
 
@@ -184,15 +225,23 @@ int main(){
         char * candidato2 = new char[TAM];
 
         candidato1 = candidatos[0].first;
-        candidato2 = candidatos[1].first;
+        candidato2 = candidatos[vectorPositivos.size()].first;
 
         operacionMutacion(candidato1);
         operacionMutacion(candidato2);
 
         operacionCruce(candidato1, candidato2);
 
-        // botando al menos optimo
-        candidatos.pop_back();
+        // Borrando al menos optimo de la lista más larga
+        if (vectorPositivos.size() > vectorNegativos.size()){
+            candidatos.erase(candidatos.begin() + (vectorPositivos.size() - 1));
+        } else {
+            candidatos.erase(candidatos.end() - 1);
+        }
+
+        cout << "------->> Mostrando candidatos menos uno\n";
+        mostrarTodosLosCandidatos(candidatos);
+
         // botando a los padres antiguos
         if (funcionAptitud(candidato1) > funcionAptitud(candidato2)){
             pair<char*,int> nuevoCandidato(candidato1, funcionAptitud(candidato1));
@@ -203,13 +252,16 @@ int main(){
         }
 
         //asignarCalificacion(candidatos);
-        sort(candidatos.begin(), candidatos.end(), [](pair<char *,int> candidato1, pair<char *,int> candidato2){
-            return candidato1.second > candidato2.second;
-        });
+        ordenarValores(candidatos, vectorPositivos, vectorNegativos, respuestaOptima);
 
         // VALOR OPTIMO --> TOTAL: 100;
         // UMBRAL: -10 a 10
-        if (candidatos[0].second == 1000){
+        if ( respuestaOptima - vectorPositivos[0].second <= umbral || (respuestaOptima - vectorNegativos[0].second) >= (umbral * -1)){
+            cout << "-------- RESPUESTAS -----------" << endl;
+            cout << binarioADecimal(vectorPositivos[0].first, TAM);
+            cout << " - ";
+            cout << binarioADecimal(vectorNegativos[0].first, TAM);
+            cout << "\n------------------------------\n";
             break;
         }
         cout << "GENERACION " << ++generacion << endl;
